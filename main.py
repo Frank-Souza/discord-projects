@@ -9,38 +9,61 @@ bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 @bot.command()
 async def rps(ctx, choice: str):
     options = ['rock', 'paper', 'scissors']
-    computer_choice = random.choice(options)
+    computerChoice = random.choice(options)
     if choice not in options:
         await ctx.send("Invalid choice! Please choose either rock, paper, or scissors.")
-    elif choice == computer_choice:
+    elif choice == computerChoice:
         await ctx.send("It's a tie! We both chose {}.".format(choice))
-    elif (choice == 'rock' and computer_choice == 'scissors') or (choice == 'paper' and computer_choice == 'rock') or (choice == 'scissors' and computer_choice == 'paper'):
-        await ctx.send("You win! You chose {} and I chose {}.".format(choice, computer_choice))
+    elif (choice == 'rock' and computerChoice == 'scissors') or (choice == 'paper' and computerChoice == 'rock') or (choice == 'scissors' and computerChoice == 'paper'):
+        await ctx.send("You win! You chose {} and I chose {}.".format(choice, computerChoice))
     else:
-        await ctx.send("I win! You chose {} and I chose {}.".format(choice, computer_choice))
+        await ctx.send("I win! You chose {} and I chose {}.".format(choice, computerChoice))
 
-@bot.command()
-async def cf(ctx, choice: str):
-    options = ['heads', 'tails']
-    computer_choice = random.choice(options)
-    if choice not in options:
-        await ctx.send("Please choose heads or tails.")
-    elif (choice == 'heads' and computer_choice == 'heads') or (choice == 'tails' and computer_choice == 'tails'):
-        await ctx.send(f'Correct! The coin landed on {computer_choice}.')
-    elif (choice == 'heads' and computer_choice == 'tails') or (choice == 'tails' and computer_choice == 'heads'):
-        await ctx.send(f'Sorry! The coin landed on {computer_choice} and you chose {choice}.')
 
 @bot.command()
 async def helper(ctx):
-    await ctx.send("Command List:\n rps: Choose rock, paper or scissors and see if you won\n cf: Choose heads or tails and see if you guess correctly\n flip: Picks a random name to flip a coin for you")
+    await ctx.send("Command List:\nrps: Choose rock, paper or scissors and see if you won\nflip: Picks a random name to flip a coin for you\nplay: Play a game of blackjack against Kings bot")
 
 @bot.command()
 async def flip(ctx):
     coinFlippers = ['Phil', 'Bill', 'John', 'Jill', 'Gregory', 'Gertrude']
     rFlipper = random.choice(coinFlippers)
     options = ['heads', 'tails']
-    computer_choice = random.choice(options)
-    await ctx.send(f'{rFlipper} flips you a coin and it lands on {computer_choice}')
+    computerChoice = random.choice(options)
+    await ctx.send(f'{rFlipper} flips you a coin and it lands on {computerChoice}')
+
+def rng():
+    return random.randint(2, 11)
+
+@bot.command()
+async def play(ctx):
+    playerHand = rng() + rng()
+    dealer = rng() + rng()
+    options = ['hit', 'stand']
+    await ctx.send(f'{playerHand} = player hand\n{dealer} = dealer hand\n Would you like to hit or stay?')
+    response = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+    while response.content.lower() != options[1]:
+        if response.content.lower() != options[0]:
+            await ctx.send("Please hit or stand.")
+            response = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        elif response.content.lower() == options[0]:
+            playerHand += rng()
+            await ctx.send(f"Hand is now {playerHand}. Hit or stand?")
+            response = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+    if response.content.lower() == options[1]:
+        await ctx.send(f'Player hand = {playerHand}')
+    
+    while dealer < 17:
+        dealer += rng()
+        await ctx.send(f'Dealer hits and hand is now: {dealer}')
+    if playerHand > 21:
+        await ctx.send("Player bust. Dealer wins")
+    elif dealer > 21:
+        await ctx.send("Dealer bust. Player wins")
+    elif playerHand > dealer:
+        await ctx.send(f'Player wins with a hand of {playerHand}')
+    else:
+         await ctx.send(f'Dealer wins with a hand of {dealer}')
 
 bot.run(token) 
  
