@@ -1,8 +1,13 @@
 import discord
 from discord.ext import commands
 import random
+import os
+from dotenv import load_dotenv
 
-token = "bot-token"
+load_dotenv()
+
+token = os.getenv('DISCORD_TOKEN')
+
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
@@ -35,6 +40,8 @@ async def flip(ctx):
 def rng():
     return random.randint(2, 11)
 
+
+
 @bot.command()
 async def play(ctx):
     playerHand = rng() + rng()
@@ -42,15 +49,19 @@ async def play(ctx):
     options = ['hit', 'stand']
     await ctx.send(f'{playerHand} = player hand\n{dealer} = dealer hand\n Would you like to hit or stay?')
     response = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
-    while response.content.lower() != options[1]:
+    while response.content.lower() != options[1] and playerHand < 22:
         if response.content.lower() != options[0]:
             await ctx.send("Please hit or stand.")
             response = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
-        elif response.content.lower() == options[0]:
+        
+        elif response.content.lower() == options[0] and playerHand < 22:
             playerHand += rng()
-            await ctx.send(f"Hand is now {playerHand}. Hit or stand?")
-            response = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
-    if response.content.lower() == options[1]:
+            if playerHand <21:
+                await ctx.send(f"Hand is now {playerHand}. Hit or stand?")
+                response = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+            else:
+                await ctx.send(f"Hand is now {playerHand}.")
+    if response.content.lower() == options[1] or playerHand > 21:
         await ctx.send(f'Player hand = {playerHand}')
     
     while dealer < 17:
@@ -67,3 +78,4 @@ async def play(ctx):
 
 bot.run(token) 
  
+# think about reusability
